@@ -11,6 +11,19 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+import random
+from time import sleep
+
+!pip install selenium
+!apt-get update
+!apt install chromium-chromedriver
+!cp /usr/lib/chromium-browser/chromedriver /usr/bin
+
+import sys
+from selenium import webdriver
+
+from selenium.webdriver.common.by import By
+
 class Movie():
 
   def __init__(self, data:dict):
@@ -62,10 +75,37 @@ class Movie():
           Directors:tuple, Actors:tuple """
     return (self.__directors, self.__actors)
 
-# ME DICE QUE NO HAY COMENTARIOS
+#Prepare Selenium Driver
+sys.path.insert(0,'/usr/lib/chromium-browser/chromedriver')
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+wd = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
 
-#comments_elements = movie_soup.find("div", id="comments")
-#comments_elements
+
+def getFirstComments(link:str):
+
+  wd.get(link)
+
+  comments_divs = wd.find_elements(By.CLASS_NAME,"comment")
+  visibleComments = []
+
+  print(f"--> Para la pelicula: '{link}'  hay {len(comments_divs)} comentarios.")
+
+  for comment_div in comments_divs:
+    
+    p_tag = comment_div.find_element(By.TAG_NAME,"p")
+    if not p_tag:
+      continue
+
+    p_tag.location_once_scrolled_into_view
+    comment = p_tag.text
+    if comment:
+      visibleComments.append(comment)
+
+
+  return visibleComments
 
 def getMovieTitle( movieSoup ):
   """ Returns string with the title of the movie of the link """
@@ -275,6 +315,7 @@ def loadMovieData ( movieSoup, link:str, movieData:dict, keys:tuple ):
               link:str links of the film page
               movieData: empty dictionary to be loaded
               keys: tuple with dictionery keys
+              webDriver: Selenium driver
   
   keys = ("Title","Year","Synopsis","Genres","Link","Comments",
       "Related Movies","Likes","RTCritics %","RTAudience %","IMDb",
@@ -288,7 +329,7 @@ def loadMovieData ( movieSoup, link:str, movieData:dict, keys:tuple ):
 
   likes, RottenTomatoesCritics, RottenTomatoesAudience, IMDb_Rating = getMovieRankingInfo(movieSoup)
   relatedMoviesTitles = getRelatedMovieTitles(movieSoup)
-  comments = [] #COMPLETAR
+  comments = getFirstComments(link)
   directors = getDirectors(movieSoup)
   actors = getActors(movieSoup)
   
@@ -302,7 +343,8 @@ def loadMovieData ( movieSoup, link:str, movieData:dict, keys:tuple ):
 
 def loadMovies( movieLinks:list, movieList:list ):
   """ Input:  movieLinks: str-list with links of movies
-              movieList: list that contains/will contain Movie objects """
+              movieList: list that contains/will contain Movie objects
+              webDriver: selenium driver """
 
   movieData = dict()
   keys = ("Title","Year","Synopsis","Genres","Link","Comments","Related Movies","Likes","RTCritics %","RTAudience %","IMDb","Directors","Actors")
@@ -356,11 +398,12 @@ def createDataFrame( movieList:list, labels:list ):
   return movies_df
 
 
-def saveDFtoCSV( dataFrame, filename:str,  ):
+def saveDFtoCSV( dataFrame, filename:str ):
   
   dataFrame.to_csv(filename, index=False)
 
 def main():
+
 
   url = "https://yts.mx/"
   initPage = requests.get(url)
@@ -385,29 +428,3 @@ def main():
   return 0
 
 main()
-
-
-
-
-
-url = "https://yts.mx/"
-initPage = requests.get(url)
-
-if ( initPage.status_code != 200 ):
-  raise( "Error while requesting url: ", url )
-  
-movieLinks = getMovieLinks( initPage )
-link1 = movieLinks[0]
-
-movieData = dict()
-moviePage = requests.get(link1)
-
-if ( moviePage.status_code != 200 ):
-  raise( "Error while requesting url: ", link1 )
-
-movieSoup = BeautifulSoup(moviePage.content, "html.parser")
-
-title = getMovieTitle( movieSoup )
-
-
-
