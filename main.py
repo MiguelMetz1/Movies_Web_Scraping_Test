@@ -95,8 +95,6 @@ def getFirstComments(link:str):
   comments_divs = wd.find_elements(By.CLASS_NAME,"comment")
   visibleComments = []
 
-  print(f"--> Para la pelicula: '{link}'  hay {len(comments_divs)} comentarios.")
-
   for comment_div in comments_divs:
     
     p_tag = comment_div.find_element(By.TAG_NAME,"p")
@@ -422,8 +420,6 @@ def main():
   keys = loadMovies( movieLinks, movieList )
 
   moviesDataFrame = createDataFrame( movieList, keys )
-
-  print(moviesDataFrame)
 
   saveDFtoCSV( moviesDataFrame, "movies_info.csv" )
 
