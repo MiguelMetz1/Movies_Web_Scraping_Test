@@ -75,6 +75,8 @@ class Movie():
           Directors:tuple, Actors:tuple """
     return (self.__directors, self.__actors)
 
+# THIS PART OF THE CODE IS NOT WORKING PROPERLY
+
 #Prepare Selenium Driver
 sys.path.insert(0,'/usr/lib/chromium-browser/chromedriver')
 chrome_options = webdriver.ChromeOptions()
@@ -85,6 +87,8 @@ wd = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
 
 
 def getFirstComments(link:str):
+  """ Get the first 30 comments if the movie
+      This function many times can't get the comments, or get only few """
 
   wd.get(link)
 
