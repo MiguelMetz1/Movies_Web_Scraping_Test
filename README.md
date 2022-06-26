@@ -3,6 +3,7 @@ Some web scraping with python in the page 'https://yts.mx/' to take movies data.
 I'm just learning about web scraping using BeautifulSoup and Selenium in Python.
 
 
+
 This is a small test about web scraping. I used the web "https://yts.mx/" that have some films data.
 I collected some data like title, year, rankings, and so on.
 A Movie object order the datain attributes.
